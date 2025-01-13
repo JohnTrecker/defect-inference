@@ -1,3 +1,10 @@
+
+export interface Inference {
+    inference_id: string,
+    time: number,
+    image: Dimensions,
+    predictions: Predictions[],
+}
 export interface Predictions {
     x: number,
     y: number,
@@ -8,6 +15,11 @@ export interface Predictions {
     points: Points[],
     class_id: number
     detection_id: string,
+}
+
+interface Dimensions {
+    width: number,
+    height: number,
 }
 
 interface Points {

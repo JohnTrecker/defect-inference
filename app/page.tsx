@@ -3,7 +3,7 @@
 import axios from 'axios';
 import {useState } from 'react';
 import JSONViewer from './JsonViewer';
-import { Predictions } from './types';
+import { Inference } from './types';
 
 export default function Home() {
   const [format, setFormat] = useState<'json' | 'image'>('json')
@@ -87,7 +87,7 @@ export default function Home() {
         if (inputImagePreview && response.data.predictions) {
           const maskedImage = await drawMasksOnImage(
             inputImagePreview,
-            response.data.predictions
+            response.data
           );
           setOutputImagePreview(maskedImage);
         }
@@ -203,7 +203,9 @@ export default function Home() {
   };
 
   // Add function to draw masks on canvas
-  const drawMasksOnImage = async (imageUrl: string, predictions: Predictions[]) => {
+  const drawMasksOnImage = async (imageUrl: string, imageData: Inference) => {
+    const {predictions, image} = imageData
+
     return new Promise<string>((resolve) => {
       const img = new Image();
       img.onload = () => {
@@ -218,33 +220,34 @@ export default function Home() {
         ctx.drawImage(img, 0, 0);
 
         // Draw each prediction
-        predictions.forEach(pred => {
-          ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)'; // Red with 0.8 opacity
+        predictions.forEach((pred) => {
+          if (!pred.points || pred.points.length === 0) {
+            return;
+          }
+
+          // Calculate scaling factors
+          const scaleX = img.width / image.width;
+          const scaleY = img.height / image.height;
+
+          ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
           ctx.lineWidth = parseInt(formData.stroke);
 
-          // Draw polygon if points exist
-          if (pred.points && pred.points.length > 0) {
-            ctx.beginPath();
-            ctx.moveTo(pred.points[0].x, pred.points[0].y);
-            pred.points.forEach((point: { x: number, y: number }) => {
-              ctx.lineTo(point.x, point.y);
-            });
-            ctx.closePath();
-            ctx.stroke();
+          // Draw polygon
+          ctx.beginPath();
+          const scaledPoints = pred.points.map(point => ({
+            x: point.x * scaleX,
+            y: point.y * scaleY
+          }));
 
-            // Add label if enabled
-            if (formData.labels === 'on') {
-              ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
-              ctx.font = '14px Arial';
-              ctx.fillText(
-                `${pred.class} (${(pred.confidence * 100).toFixed(1)}%)`,
-                pred.points[0].x,
-                pred.points[0].y - 5
-              );
-            }
-          }
+          ctx.moveTo(scaledPoints[0].x, scaledPoints[0].y);
+          scaledPoints.forEach((point: { x: number, y: number }) => {
+            ctx.lineTo(point.x, point.y);
+          });
+          ctx.closePath();
+          ctx.stroke();
         });
 
+        // console.log(`Successfully drew ${masksDrawn}/${predictions.length} masks`);
         resolve(canvas.toDataURL('image/jpeg'));
       };
       img.src = imageUrl;
