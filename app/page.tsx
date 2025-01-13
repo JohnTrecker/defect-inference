@@ -3,6 +3,7 @@
 import axios from 'axios';
 import {useState } from 'react';
 import JSONViewer from './JsonViewer';
+import { Predictions } from './types';
 
 export default function Home() {
   const [format, setFormat] = useState<'json' | 'image'>('json')
@@ -202,7 +203,7 @@ export default function Home() {
   };
 
   // Add function to draw masks on canvas
-  const drawMasksOnImage = async (imageUrl: string, predictions: any[]) => {
+  const drawMasksOnImage = async (imageUrl: string, predictions: Predictions[]) => {
     return new Promise<string>((resolve) => {
       const img = new Image();
       img.onload = () => {

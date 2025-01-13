@@ -15,7 +15,7 @@ export default function JSONViewer({ data }: { data: string }) {
         setExpanded(newExpanded);
     };
 
-    const renderValue = (value: any, path: string, indent: number = 0): JSX.Element => {
+    const renderValue = (value: JSON, path: string, indent: number = 0): JSX.Element => {
         if (Array.isArray(value)) {
             const isExpanded = expanded.has(path);
             return (
