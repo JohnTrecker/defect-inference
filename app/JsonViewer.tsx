@@ -2,7 +2,12 @@ import { useState } from "react";
 
 // Add new JSONViewer component
 export default function JSONViewer({ data }: { data: string }) {
-    const _data = JSON.parse(data)
+    let _data = ''
+    try {
+        _data = JSON.parse(data)
+    } catch {
+        _data = data
+    }
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
     const toggleExpand = (path: string) => {

@@ -405,8 +405,8 @@ export default function Home() {
                 )}
               </div>
               {outputImagePreview && output ? (
-                  <JSONViewer data={output} />
-                ) : (
+                <JSONViewer data={output} />
+              ) : (
                   <pre id="output" className="codeblock" dangerouslySetInnerHTML={{ __html: output }} />
                 )}
               </div>
