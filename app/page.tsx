@@ -3,7 +3,7 @@
 import axios from 'axios';
 import {useState } from 'react';
 import JSONViewer from './JsonViewer';
-import { Inference } from './types';
+import { Defect, Inference } from './types';
 
 export default function Home() {
   const [format, setFormat] = useState<'json' | 'image'>('json')
@@ -24,7 +24,7 @@ export default function Home() {
     overlap: '50',
     uploadMethod: 'upload', // 'upload' or 'url'
     labels: 'off',
-    stroke: '1',
+    stroke: '5',
     version: '1',
   });
 
@@ -202,6 +202,23 @@ export default function Home() {
     };
   };
 
+  function getColorForLabel(label: Defect) {
+    // Define colors for each label type
+    const colors = {
+      board_heartwood: "#323c63",
+      board_whitewood: "#637ca2",
+      board_rot: "#9d67fb",
+      board_streak: "#c78e58",
+      board_knot: "#7b492d",
+      board_wormhole: "#0692da",
+      board_want: "#ae6379",
+      board_bark: "#7e7e88",
+      board_firescar: "#dfb2ad",
+      board_beltmark: "#78dd84",
+    };
+    return colors[label] || '#000000';
+  }
+
   // Add function to draw masks on canvas
   const drawMasksOnImage = async (imageUrl: string, imageData: Inference) => {
     const {predictions, image} = imageData
@@ -229,8 +246,10 @@ export default function Home() {
           const scaleX = img.width / image.width;
           const scaleY = img.height / image.height;
 
-          ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-          ctx.lineWidth = parseInt(formData.stroke);
+          // ctx.strokeStyle = getColorForLabel(pred.class as Defect);
+          // ctx.lineWidth = parseInt(formData.stroke);
+          const color = getColorForLabel(pred.class as Defect);
+          ctx.fillStyle = color + '66'; // Add 66 for 40% opacity in hex
 
           // Draw polygon
           ctx.beginPath();
@@ -244,6 +263,12 @@ export default function Home() {
             ctx.lineTo(point.x, point.y);
           });
           ctx.closePath();
+          ctx.fill();
+          // ctx.stroke();
+
+          // Draw outline
+          ctx.strokeStyle = color;
+          ctx.lineWidth = parseInt(formData.stroke);
           ctx.stroke();
         });
 
@@ -376,9 +401,9 @@ export default function Home() {
                 <div className="col-12-s6-m4" id="stroke">
                   <label className="input__label">Stroke Width</label>
                   <div>
-                    <button data-value="1" className="bttn left active">1px</button>
+                    <button data-value="1" className="bttn left">1px</button>
                     <button data-value="2" className="bttn">2px</button>
-                    <button data-value="5" className="bttn">5px</button>
+                    <button data-value="5" className="bttn active">5px</button>
                     <button data-value="10" className="bttn right">10px</button>
                   </div>
                 </div>

@@ -26,3 +26,16 @@ interface Points {
     x: number,
     y: number,
 }
+
+export enum Defect {
+    "board_heartwood" = "board_heartwood",
+    "board_whitewood" = "board_whitewood",
+    "board_rot" = "board_rot",
+    "board_streak" = "board_streak",
+    "board_knot" = "board_knot",
+    "board_wormhole" = "board_wormhole",
+    "board_want" = "board_want",
+    "board_bark" = "board_bark",
+    "board_firescar" = "board_firescar",
+    "board_beltmark" = "board_beltmark",
+}
