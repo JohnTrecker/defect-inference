@@ -23,10 +23,9 @@ export default function Report({ output }: Props) {
 
     return (
         <div className="mb-4">
-            {/* <label className="input__label">Detected Defects</label> */}
-            <span>
+            {/* <span>
                 <b>inference time</b> {` - ${inferenceTime}ms`}
-            </span>
+            </span> */}
             {
                 defects.length > 0
                 ? (
@@ -37,7 +36,7 @@ export default function Report({ output }: Props) {
                                 const percentConfidence = Math.max(confidence, Math.floor(confidence * 100));
                                 return (
                                     <li key={i}>
-                                        <span>
+                                        <span className="m-4">
                                             <b>{className}</b> {` - ${percentConfidence}% confidence`}
                                         </span>
                                     </li>

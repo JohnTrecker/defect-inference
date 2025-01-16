@@ -4,9 +4,10 @@ import axios from 'axios';
 
 import {useCallback, useState } from 'react';
 import JSONViewer from './JsonViewer';
-import { Features, Inference, SavedImages } from './types';
 import WoodImage from './WoodImage';
 import Report from './Report';
+import AllImages from './AllImages';
+import { Features, Inference, SavedImages } from './types';
 
 const INIT_OUTPUT = {
   inference_id: '',
@@ -334,7 +335,8 @@ export default function Home() {
               </div> */}
 
               <div className="w-full">
-                <button value="Run Inference" onClick={handleFormSubmit} className="bttn__primary">Run Inference</button>
+                <button value="Run Inference" onClick={handleFormSubmit} className="bttn__primary mr-54">Run Inference</button>
+                {savedImages.length > 1 && <AllImages images={savedImages} features={features}/>}
               </div>
             </div>
 
@@ -348,7 +350,9 @@ export default function Home() {
                 {
                   output?.predictions.length > 0
                     ? (
-                      <Report output={output} />
+                      <div id="output" className="codeblock">
+                        <Report output={output} />
+                      </div>
                     ) : (
                       <p id="output" className="codeblock">{notification}</p>
                     )

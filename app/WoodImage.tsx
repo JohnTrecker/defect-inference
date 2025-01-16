@@ -13,7 +13,7 @@ export default function WoodImage({image, data, features}: Props){
     const [processedImage, setProcessedImage] = useState<string>(image);
     const enabledClasses = getEnabledClasses(features)
 
-        const processImageWithMasks = async (imageData: string, inferenceData: Inference, classes: string[]) => {
+    const processImageWithMasks = async (imageData: string, inferenceData: Inference, classes: string[]) => {
         const filteredData = {
             ...inferenceData,
             predictions: inferenceData.predictions.filter(pred =>
