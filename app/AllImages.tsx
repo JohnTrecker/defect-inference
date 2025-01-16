@@ -24,6 +24,10 @@ interface Props {
     features: Features,
 }
 export default function AllImages({ images, features }: Props){
+    const uniqueImages = images.filter((image, index, self) =>
+        index === self.findIndex((i) => i.data.inference_id === image.data.inference_id)
+    );
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -43,7 +47,7 @@ export default function AllImages({ images, features }: Props){
                     className="w-full px-12"
                 >
                     <CarouselContent className="-ml-1 md:-ml-4 ">
-                        {images.map(({image, data}) => (
+                        {uniqueImages.map(({image, data}) => (
                             <CarouselItem key={data.inference_id}>
                                 <WoodImage image={image} data={data} features={features} />
                                 <Report output={data} />

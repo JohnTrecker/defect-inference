@@ -36,7 +36,7 @@ export default function WoodImage({image, data, features}: Props){
     }, [data, enabledClasses, image])
 
     return processedImage ? (
-        <div className="flex-1">
+        <div className="flex-1 relative">
             <Image
                 src={processedImage}
                 alt="Output preview"
