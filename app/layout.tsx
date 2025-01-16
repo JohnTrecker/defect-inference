@@ -13,10 +13,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className='antialiased'
-      >
-        {children}
+      <body className='antialiased'>
+        <main>
+          {children}
+        </main>
+        <footer className="bg-gray-100 py-6 text-center">
+          <p>© {new Date().getFullYear()} ISCO. All rights reserved.</p>
+        </footer>
       </body>
     </html>
   );

@@ -10,8 +10,6 @@ export default function Report({ output }: Props) {
     const defects = predictions.filter(removeBorders)
     const inferenceTime = Math.round(time * 1000 * 100) / 100 // Convert to ms and round to 2 decimal places
 
-    if (defects.length === 0) return <p>No defects detected.</p>
-
     // const report = defects.reduce((memo, prediction) => {
     //   const {class: _class, confidence} = prediction
     //   const className = _class.replace('board_', '')
@@ -29,21 +27,28 @@ export default function Report({ output }: Props) {
             <span>
                 <b>inference time</b> {` - ${inferenceTime}ms`}
             </span>
-            <ul>
-                {
-                    defects.map(({ class: _class, confidence }, i) => {
-                        const className = _class.replace('board_', '')
-                        const percentConfidence = Math.max(confidence, Math.floor(confidence * 100));
-                        return (
-                            <li key={i}>
-                                <span>
-                                    <b>{className}</b> {` - ${percentConfidence}% confidence`}
-                                </span>
-                            </li>
-                        )
-                    })
-                }
-            </ul>
+            {
+                defects.length > 0
+                ? (
+                    <ul>
+                        {
+                            defects.map(({ class: _class, confidence }, i) => {
+                                const className = _class.replace('board_', '')
+                                const percentConfidence = Math.max(confidence, Math.floor(confidence * 100));
+                                return (
+                                    <li key={i}>
+                                        <span>
+                                            <b>{className}</b> {` - ${percentConfidence}% confidence`}
+                                        </span>
+                                    </li>
+                                )
+                            })
+                        }
+                    </ul>
+                ) : (
+                    <p>No defects detected.</p>
+                )
+            }
         </div>
     )
 

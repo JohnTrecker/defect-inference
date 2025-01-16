@@ -43,3 +43,10 @@ export enum Defect {
 export type Features = {
     [key in Defect]: boolean
 }
+
+export interface SavedImage {
+    image: string,
+    data: Inference,
+}
+
+export type SavedImages = SavedImage[]

@@ -4,7 +4,7 @@ import axios from 'axios';
 
 import {useCallback, useState } from 'react';
 import JSONViewer from './JsonViewer';
-import { Features, Inference } from './types';
+import { Features, Inference, SavedImages } from './types';
 import WoodImage from './WoodImage';
 import Report from './Report';
 
@@ -21,6 +21,7 @@ export default function Home() {
   const [notification, setNotification] = useState<string>('');
   const [showResult, setShowResult] = useState(false);
   const [inputImagePreview, setInputImagePreview] = useState<string>('');
+  const [savedImages, setSavedImages] = useState<SavedImages>([]);
   // const [inputLabel, setInputLabel] = useState<'Select File' | 'Type URL'>('Select File');
   const [features, setFeatures] = useState<Features>({
     board_heartwood: true,
@@ -149,6 +150,13 @@ export default function Home() {
       });
 
       setOutput(response.data);
+      setSavedImages((prev) => [
+        ...prev,
+        {
+          image: inputImagePreview,
+          data: response.data,
+        }
+      ])
       setNotification('');
     } catch (error) {
       const specific = error instanceof Error ? error.message : undefined
@@ -345,7 +353,7 @@ export default function Home() {
                       <p id="output" className="codeblock">{notification}</p>
                     )
                 }
-                <h4 className="text-sm font-medium mb-2">Detected Objects:</h4>
+                {/* <h4 className="text-sm font-medium mb-2">Detected Objects:</h4> */}
                 {
                   format === 'json' ? (
                     <JSONViewer data={output} />
