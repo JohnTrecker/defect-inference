@@ -1,5 +1,6 @@
 import { removeBorders } from "./helpers/utils"
 import { Inference } from "./types"
+import { Badge } from "@/components/ui/badge"
 
 interface Props {
     output: Inference,
@@ -37,9 +38,9 @@ export default function Report({ output }: Props) {
                                 const percentConfidence = Math.max(confidence, Math.floor(confidence * 100));
                                 return (
                                     <li key={i}>
-                                        <span className="m-4">
-                                            <b>{className}</b> {` - ${percentConfidence}% confidence`}
-                                        </span>
+                                        <Badge className='m-4' variant="outline">
+                                            {`${className} ( ${percentConfidence}% )`}
+                                        </Badge>
                                     </li>
                                 )
                             })

@@ -13,20 +13,19 @@ export function getEnabledClasses(features: Features): string[] {
 export function getColorForLabel(label: Defect) {
     // Define colors for each label type
     const colors = {
-        board_heartwood: "#323c63",
-        board_whitewood: "#637ca2",
-        board_rot: "#9d67fb",
-        board_streak: "#c78e58",
-        board_knot: "#7b492d",
-        board_wormhole: "#0692da",
-        board_want: "#ae6379",
-        board_bark: "#7e7e88",
-        board_firescar: "#dfb2ad",
-        board_beltmark: "#78dd84",
+        board_heartwood: "#4B5CFF",  // Bright blue
+        board_whitewood: "#00B4D8",  // Cyan
+        board_rot: "#B14EFF",    // Bright purple
+        board_streak: "#FF9F45",  // Bright orange
+        board_knot: "#FF6B6B",    // Bright red
+        board_wormhole: "#4FFFB0", // Bright mint
+        board_want: "#FF61D2",    // Bright pink
+        board_bark: "#FFD93D",    // Bright yellow
+        board_firescar: "#FF8FA3", // Bright salmon
+        board_beltmark: "#4ADE80", // Bright green
     };
     return colors[label] || '#000000';
 }
-
 
 // Add function to draw masks on canvas
 export async function drawMasksOnImage(imageUrl: string, imageData: Inference) {

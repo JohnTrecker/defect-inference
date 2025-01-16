@@ -11,7 +11,7 @@ export interface Prediction {
     width: number,
     height: number,
     confidence: number,
-    class: string,
+    class: Defect,
     points: Points[],
     class_id: number
     detection_id: string,
