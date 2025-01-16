@@ -6,9 +6,10 @@ interface Props {
 }
 
 export default function Report({ output }: Props) {
-    const { predictions, time } = output
+    // const { predictions, time } = output
+    const { predictions } = output
     const defects = predictions.filter(removeBorders)
-    const inferenceTime = Math.round(time * 1000 * 100) / 100 // Convert to ms and round to 2 decimal places
+    // const inferenceTime = Math.round(time * 1000 * 100) / 100 // Convert to ms and round to 2 decimal places
 
     // const report = defects.reduce((memo, prediction) => {
     //   const {class: _class, confidence} = prediction
