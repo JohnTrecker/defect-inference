@@ -1,14 +1,22 @@
 import { useState } from "react";
+import { Inference } from "./types";
 
 // Add new JSONViewer component
-export default function JSONViewer({ data }: { data: string }) {
-    let _data = ''
-    try {
-        _data = JSON.parse(data)
-    } catch {
-        _data = data
-    }
-    const [expanded, setExpanded] = useState<Set<string>>(new Set());
+export default function JSONViewer({data }: {data: Inference }) {
+    const [expanded, setExpanded] = useState<Set<string>>(() => {
+        // Initialize with only object paths expanded (not arrays)
+        const allPaths = new Set<string>();
+
+        const addPaths = (value: Inference, path: string) => {
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                allPaths.add(path);
+                Object.entries(value).forEach(([key, val]) => addPaths(val, `${path}.${key}`));
+            }
+        };
+
+        addPaths(data, 'root');
+        return allPaths;
+    });
 
     const toggleExpand = (path: string) => {
         const newExpanded = new Set(expanded);
@@ -20,7 +28,7 @@ export default function JSONViewer({ data }: { data: string }) {
         setExpanded(newExpanded);
     };
 
-    const renderValue = (value: JSON | string, path: string, indent: number = 0): JSX.Element => {
+    const renderValue = (value: Inference, path: string, indent: number = 0): JSX.Element => {
         if (Array.isArray(value)) {
             const isExpanded = expanded.has(path);
             return (
@@ -77,7 +85,7 @@ export default function JSONViewer({ data }: { data: string }) {
 
     return (
         <div className="json-viewer font-mono text-sm">
-            {renderValue(_data, 'root')}
+            {renderValue(data, 'root')}
         </div>
     );
 };

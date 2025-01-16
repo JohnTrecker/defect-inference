@@ -3,9 +3,9 @@ export interface Inference {
     inference_id: string,
     time: number,
     image: Dimensions,
-    predictions: Predictions[],
+    predictions: Prediction[],
 }
-export interface Predictions {
+export interface Prediction {
     x: number,
     y: number,
     width: number,
@@ -38,4 +38,8 @@ export enum Defect {
     "board_bark" = "board_bark",
     "board_firescar" = "board_firescar",
     "board_beltmark" = "board_beltmark",
+}
+
+export type Features = {
+    [key in Defect]: boolean
 }

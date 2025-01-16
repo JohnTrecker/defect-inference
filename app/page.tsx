@@ -1,22 +1,45 @@
 'use client';
 
 import axios from 'axios';
-import {useState } from 'react';
+
+import {useCallback, useState } from 'react';
 import JSONViewer from './JsonViewer';
-import { Defect, Inference } from './types';
+import { Features, Inference } from './types';
+import WoodImage from './WoodImage';
+import Report from './Report';
+
+const INIT_OUTPUT = {
+  inference_id: '',
+  time: 0,
+  image: {width: 0, height: 0},
+  predictions: [],
+}
 
 export default function Home() {
-  const [format, setFormat] = useState<'json' | 'image'>('json')
-  const [output, setOutput] = useState('');
+  const [format, setFormat] = useState<'json' | 'image'>('image')
+  const [output, setOutput] = useState<Inference>(INIT_OUTPUT);
+  const [notification, setNotification] = useState<string>('');
   const [showResult, setShowResult] = useState(false);
   const [inputImagePreview, setInputImagePreview] = useState<string>('');
-  const [outputImagePreview, setOutputImagePreview] = useState<string>('');
+  // const [inputLabel, setInputLabel] = useState<'Select File' | 'Type URL'>('Select File');
+  const [features, setFeatures] = useState<Features>({
+    board_heartwood: true,
+    board_whitewood: true,
+    board_rot: true,
+    board_streak: true,
+    board_knot: true,
+    board_wormhole: true,
+    board_want: true,
+    board_bark: true,
+    board_firescar: true,
+    board_beltmark: true,
+  });
 
   // State for form values
   const [formData, setFormData] = useState({
     apiKey: '',
     model: '',
-    format: 'json',
+    format: 'image',
     fileName: '',
     url: '',
     classes: '',
@@ -51,117 +74,19 @@ export default function Home() {
       // Create preview URL for the input image
       const previewUrl = URL.createObjectURL(file);
       setInputImagePreview(previewUrl);
+      setOutput(INIT_OUTPUT)
     }
 
   };
 
   // Handle method button clicks
-  const handleMethodClick = (method: 'upload' | 'url') => {
-    setFormData(prev => ({ ...prev, uploadMethod: method }));
-  };
+  // const handleMethodClick = (method: 'upload' | 'url') => {
+  //   setFormData(prev => ({ ...prev, uploadMethod: method }));
+  //   setInputLabel(method === 'upload' ? 'Select File' : 'Type URL')
+  // };
 
-  // Handle form submission
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setOutput('Inferring...');
-    setShowResult(true);
-
-    try {
-      const fileInput = document.getElementById('file') as HTMLInputElement;
-      if (formData.uploadMethod === 'upload' && !fileInput?.files?.[0]) {
-        throw new Error('Please select a file to upload');
-      }
-
-      const {image} = await getSettingsFromForm();
-
-      const response = await axios({
-        method: "POST",
-        url: '/api',
-        data: {image},
-      });
-
-      if (formData.format === 'json') {
-        setOutput(JSON.stringify(response.data, null, 4));
-
-        // Draw masks on input image
-        if (inputImagePreview && response.data.predictions) {
-          const maskedImage = await drawMasksOnImage(
-            inputImagePreview,
-            response.data
-          );
-          setOutputImagePreview(maskedImage);
-        }
-      } else {
-        const arrayBuffer = response.data;
-        const blob = new Blob([arrayBuffer], { type: 'image/jpeg' });
-        const imageUrl = URL.createObjectURL(blob);
-        setOutput(`<img src="${imageUrl}" />`);
-      }
-    } catch (error) {
-      setOutputImagePreview(''); // Clear output preview on error
-      const specific = error instanceof Error ? error.message : undefined
-      const generic = [
-        "Check your API key, model, version,",
-        "and other parameters",
-        "then try again."
-      ].join('\n')
-      setOutput([
-        "Error loading response.",
-        "",
-        specific ?? generic
-      ].join("\n"));
-      console.log('Error submitting form: ', error)
-    }
-  };
-
-  const convertToBase64 = async (file: File | undefined): Promise<string> => {
-    if (!file) {
-      throw new Error('No file selected');
-    }
-    // First convert to base64 to work with image data
-    const base64 = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.readAsDataURL(file);
-    });
-
-    // Create image element to get dimensions
-    const img = await new Promise<HTMLImageElement>((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.src = base64;
-    });
-
-    // Check if resizing is needed
-    const maxSize = 800;
-    let width = img.width;
-    let height = img.height;
-
-    if (width > maxSize || height > maxSize) {
-      if (width > height) {
-        height = Math.round((height * maxSize) / width);
-        width = maxSize;
-      } else {
-        width = Math.round((width * maxSize) / height);
-        height = maxSize;
-      }
-
-      // Create canvas and resize
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx?.drawImage(img, 0, 0, width, height);
-
-      // Convert back to base64
-      return canvas.toDataURL('image/jpeg', 0.9);
-    }
-
-    return base64;
-  };
-
-
-  const getSettingsFromForm = async () => {
+  // Get form data
+  const getSettingsFromForm = useCallback(async () => {
     // Get the file if upload method is selected
     const fileInput = document.getElementById('file') as HTMLInputElement;
     const file = fileInput?.files?.[0];
@@ -200,149 +125,144 @@ export default function Home() {
       data,
       image: fileToUpload
     };
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.fileName]);
 
-  function getColorForLabel(label: Defect) {
-    // Define colors for each label type
-    const colors = {
-      board_heartwood: "#323c63",
-      board_whitewood: "#637ca2",
-      board_rot: "#9d67fb",
-      board_streak: "#c78e58",
-      board_knot: "#7b492d",
-      board_wormhole: "#0692da",
-      board_want: "#ae6379",
-      board_bark: "#7e7e88",
-      board_firescar: "#dfb2ad",
-      board_beltmark: "#78dd84",
-    };
-    return colors[label] || '#000000';
-  }
+  // Handle form submission
+  const handleFormSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNotification('Inferring...');
+    setShowResult(true);
 
-  // Add function to draw masks on canvas
-  const drawMasksOnImage = async (imageUrl: string, imageData: Inference) => {
-    const {predictions, image} = imageData
+    try {
+      const fileInput = document.getElementById('file') as HTMLInputElement;
+      if (formData.uploadMethod === 'upload' && !fileInput?.files?.[0]) {
+        throw new Error('Please select a file to upload');
+      }
 
-    return new Promise<string>((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
+      const {image} = await getSettingsFromForm();
 
-        if (!ctx) return;
+      const response = await axios({
+        method: "POST",
+        url: '/api',
+        data: { image },
+      });
 
-        // Draw original image
-        ctx.drawImage(img, 0, 0);
+      setOutput(response.data);
+      setNotification('');
+    } catch (error) {
+      const specific = error instanceof Error ? error.message : undefined
+      const generic = [
+        "Check your API key, model, version,",
+        "and other parameters",
+        "then try again."
+      ].join('\n')
+      setNotification([
+        "Error loading response.",
+        "",
+        specific ?? generic
+      ].join("\n"));
+      console.log('Error submitting form: ', error)
+    }
+  }, [formData.uploadMethod, getSettingsFromForm]);
 
-        // Draw each prediction
-        predictions.forEach((pred) => {
-          if (!pred.points || pred.points.length === 0) {
-            return;
-          }
-
-          // Calculate scaling factors
-          const scaleX = img.width / image.width;
-          const scaleY = img.height / image.height;
-
-          // ctx.strokeStyle = getColorForLabel(pred.class as Defect);
-          // ctx.lineWidth = parseInt(formData.stroke);
-          const color = getColorForLabel(pred.class as Defect);
-          ctx.fillStyle = color + '66'; // Add 66 for 40% opacity in hex
-
-          // Draw polygon
-          ctx.beginPath();
-          const scaledPoints = pred.points.map(point => ({
-            x: point.x * scaleX,
-            y: point.y * scaleY
-          }));
-
-          ctx.moveTo(scaledPoints[0].x, scaledPoints[0].y);
-          scaledPoints.forEach((point: { x: number, y: number }) => {
-            ctx.lineTo(point.x, point.y);
-          });
-          ctx.closePath();
-          ctx.fill();
-          // ctx.stroke();
-
-          // Draw outline
-          ctx.strokeStyle = color;
-          ctx.lineWidth = parseInt(formData.stroke);
-          ctx.stroke();
-        });
-
-        // console.log(`Successfully drew ${masksDrawn}/${predictions.length} masks`);
-        resolve(canvas.toDataURL('image/jpeg'));
-      };
-      img.src = imageUrl;
+  const convertToBase64 = async (file: File | undefined): Promise<string> => {
+    if (!file) {
+      throw new Error('No file selected');
+    }
+    // First convert to base64 to work with image data
+    const base64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(file);
     });
+
+    // Create image element to get dimensions
+    const img = await new Promise<HTMLImageElement>((resolve) => {
+      const img = document.createElement('img');
+      img.onload = () => resolve(img);
+      img.src = base64;
+    });
+
+    // Check if resizing is needed
+    const maxSize = 1024;
+    let width = img.width;
+    let height = img.height;
+
+    if (width > maxSize || height > maxSize) {
+      if (width > height) {
+        height = Math.round((height * maxSize) / width);
+        width = maxSize;
+      } else {
+        width = Math.round((width * maxSize) / height);
+        height = maxSize;
+      }
+
+      // Create canvas and resize
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, width, height);
+
+      // Convert back to base64
+      return canvas.toDataURL('image/jpeg', 0.9);
+    }
+
+    return base64;
   };
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-
+    <div className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-8 items-center sm:items-start">
         <form id="inputForm" onSubmit={handleFormSubmit}>
-          <div className="header">
-            {/* <div className="header__grid">
-              <div>
-                <label className="header__label" htmlFor="model">Model</label>
-                <input
-                  className="input"
-                  type="text"
-                  id="model"
-                  value={formData.model}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div>
-                <label className="header__label" htmlFor="version">Version</label>
-                <input
-                  className="input"
-                  type="number"
-                  id="version"
-                  value={formData.version}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div>
-                <label className="header__label" htmlFor="api_key">API Key</label>
-                <input
-                  className="input"
-                  type="text"
-                  id="apiKey"
-                  value={formData.apiKey}
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div> */}
-            <h1>Select an image for defect detection</h1>
+          <div className="header flex text-xl font-medium">
+            <h1>Select an image for defect detection.</h1>
           </div>
 
           <div className="content">
-            <div className="content__grid">
-              <div className="col-12-s6-m4" id="method">
+            <div className="flex flex-wrap w-full gap-14">
+              {/* <div className="w-full sm:w-1/2 md:w-1/3" id="method">
                 <label className="input__label">Upload Method</label>
                 <div>
                   <button
-                  data-value="upload"
-                  id="computerButton"
-                  className={`bttn left fill ${formData.uploadMethod === 'upload' ? 'active' : ''}`}
-                  onClick={() => handleMethodClick('upload')}
-                >
-                  Upload
-                </button>
-                  <button data-value="url" id="urlButton" className="bttn right fill">URL</button>
+                    data-value="upload"
+                    id="computerButton"
+                    className={`bttn left fill ${formData.uploadMethod === 'upload' ? 'active' : ''}`}
+                    onClick={() => handleMethodClick('upload')}
+                  >
+                    Upload
+                  </button>
+                  <button
+                    data-value="url"
+                    id="urlButton"
+                    className={`bttn right fill ${formData.uploadMethod === 'url' ? 'active' : ''}`}
+                    onClick={() => handleMethodClick('url')}
+                  >
+                    URL
+                  </button>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="col-12-m8" id="fileSelectionContainer">
+              <div className="w-full md:w-2/3" id="fileSelectionContainer">
+                {/* <label className="input__label" htmlFor="file">{inputLabel}</label> */}
                 <label className="input__label" htmlFor="file">Select File</label>
                 <div className="flex">
-                  <input className="input input--left flex-1" type="text" id="fileName" disabled value={formData.fileName}
-                    onChange={handleInputChange} />
-                  <button id="fileMock" className="bttn right active" onClick={() => document.getElementById('file')?.click()} >Browse</button>
+                  <input
+                    className="input input--left flex-1"
+                    type="text"
+                    id="fileName"
+                    autoComplete="off"
+                    value={formData.fileName}
+                    onChange={handleInputChange}
+                  />
+                  {/* {
+                    inputLabel === "Select File" && ( */}
+                      <button id="fileMock" className="bttn right active" onClick={() => document.getElementById('file')?.click()}>
+                        Browse
+                      </button>
+                    {/* )
+                  } */}
                 </div>
                 <input
                   style={{ display: "none" }}
@@ -352,53 +272,49 @@ export default function Home() {
                 />
               </div>
 
-              <div className="col-12-m8" id="urlContainer">
+              <div className="w-full md:w-2/3" id="urlContainer">
                 <label className="input__label" htmlFor="file">Enter Image URL</label>
                 <div className="flex">
                   <input type="text" id="url" placeholder="https://path.to/your.jpg" className="input" value={formData.url}
-                    onChange={handleInputChange} /><br/>
+                    onChange={handleInputChange} />
                 </div>
               </div>
 
-              <div className="col-12-m6">
-                <label className="input__label" htmlFor="classes">Filter Classes</label>
-                <input type="text" id="classes" placeholder="Enter class names" className="input" value={formData.classes}
-                  onChange={handleInputChange} /><br/>
-                <span className="text--small">Separate names with commas</span>
-              </div>
-
-              <div className="col-6-m3 relative">
-                <label className="input__label" htmlFor="confidence">Min Confidence</label>
-                <div>
-                  <i className="fas fa-crown"></i>
-                  <span className="icon">%</span>
-                  <input type="number" id="confidence" max="100" step={2} min="0" className="input input__icon" value={formData.confidence}
-                    onChange={handleInputChange} /></div>
-                </div>
-              <div className="col-6-m3 relative">
-                <label className="input__label" htmlFor="overlap">Max Overlap</label>
-                <div>
-                  <i className="fas fa-object-ungroup"></i>
-                  <span className="icon">%</span>
-                  <input type="number" id="overlap" max="100" step={2} min="0" className="input input__icon" value={formData.overlap}
-                    onChange={handleInputChange} /></div>
-                </div>
-              <div className="col-6-m3" id="format">
+              <div className="w-1/2 md:w-1/4" id="format">
                 <label className="input__label">Inference Result</label>
                 <div>
                   <button id="imageButton" onClick={() => setFormat('image')} data-value="image" className={`bttn left fill ${format === 'image' ? 'active' : ''}`}>Image</button>
                   <button id="jsonButton" onClick={() => setFormat('json')} data-value="json" className={`bttn right fill ${format === 'json' ? 'active' : ''}`}>JSON</button>
                 </div>
               </div>
-              <div className="col-12 content__grid" id="imageOptions">
-                <div className="col-12-s6-m4" id="labels">
-                  <label className="input__label">Labels</label>
-                  <div>
-                    <button className="bttn left active">Off</button>
-                    <button data-value="on" className="bttn right">On</button>
-                  </div>
+
+              <div className="w-full" id="labels">
+                <label className="input__label">Labels</label>
+                <div className="flex flex-wrap gap-4">
+                  {Object.keys(features).map((feature) => (
+                    <div key={feature} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={feature}
+                        className="w-5 h-5 border border-[#cbd5e0] rounded cursor-pointer appearance-none checked:bg-white relative
+                        after:content-['✕'] after:absolute after:top-1/2 after:left-1/2 after:transform after:-translate-x-1/2 after:-translate-y-1/2 
+                        after:opacity-0 checked:after:opacity-100 after:text-[#606FC7] checked:border-[#606FC7] transition-colors"
+                        checked={features[feature as keyof Features]}
+                        onChange={(e) => setFeatures(prev => ({
+                          ...prev,
+                          [feature]: e.target.checked,
+                        }))}
+                      />
+                      <label htmlFor={feature} className="text-sm capitalize">
+                        {feature.replace('board_', '')}
+                      </label>
+                    </div>
+                  ))}
                 </div>
-                <div className="col-12-s6-m4" id="stroke">
+              </div>
+
+              {/* <div className="w-full flex flex-wrap" id="imageOptions">
+                <div className="w-full sm:w-1/2 md:w-1/3" id="stroke">
                   <label className="input__label">Stroke Width</label>
                   <div>
                     <button data-value="1" className="bttn left">1px</button>
@@ -407,19 +323,38 @@ export default function Home() {
                     <button data-value="10" className="bttn right">10px</button>
                   </div>
                 </div>
-              </div>
-              <div className="col-12">
-                <button type="submit" value="Run Inference" className="bttn__primary">Run Inference</button>
+              </div> */}
+
+              <div className="w-full">
+                <button value="Run Inference" onClick={handleFormSubmit} className="bttn__primary">Run Inference</button>
               </div>
             </div>
+
             <div className="result" id="resultContainer" style={{ display: showResult ? 'block' : 'none' }}>
               <div className="divider"></div>
-              <div className="result__header">
+              {/* <div className="result__header">
                 <h3 className="headline">Result</h3>
                 <a href="#">Copy Code</a>
-              </div>
-              <div className="flex gap-4 mb-4">
-                {inputImagePreview && (
+              </div> */}
+              <div className="flex flex-col gap-4 mb-4">
+                {
+                  output?.predictions.length > 0
+                    ? (
+                      <Report output={output} />
+                    ) : (
+                      <p id="output" className="codeblock">{notification}</p>
+                    )
+                }
+                <h4 className="text-sm font-medium mb-2">Detected Objects:</h4>
+                {
+                  format === 'json' ? (
+                    <JSONViewer data={output} />
+                  ) : (
+                      <WoodImage image = { inputImagePreview } data = { output } features = { features } />
+                  )
+                }
+                {/* {inputImagePreview && } */}
+                {/* {inputImagePreview && (
                   <div className="flex-1">
                     <h4 className="text-sm font-medium mb-2">Input Image:</h4>
                     <img src={inputImagePreview} alt="Input preview" className="max-w-full h-auto" />
@@ -430,66 +365,12 @@ export default function Home() {
                     <h4 className="text-sm font-medium mb-2">Detected Objects:</h4>
                     <img src={outputImagePreview} alt="Output preview" className="max-w-full h-auto" />
                   </div>
-                )}
+                )} */}
               </div>
-              {outputImagePreview && output ? (
-                <JSONViewer data={output} />
-              ) : (
-                  <pre id="output" className="codeblock" dangerouslySetInnerHTML={{ __html: output }} />
-                )}
-              </div>
+            </div>
           </div>
-
         </form>
-
       </main>
-      {/* <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer> */}
     </div>
   );
 }
