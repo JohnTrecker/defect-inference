@@ -49,7 +49,19 @@ export default {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+			board: {
+				heartwood: 'rgb(75 92 255)', // or 'rgb(75, 92, 255)'
+				whitewood: 'rgb(0 180 216)',
+				rot: 'rgb(177 78 255)',
+				streak: 'rgb(255 159 69)',
+				knot: 'rgb(255 107 107)',
+				wormhole: 'rgb(79 255 176)',
+				want: 'rgb(255 97 210)',
+				bark: 'rgb(255 217 61)',
+				firescar: 'rgb(255 143 163)',
+				beltmark: 'rgb(74 222 128)',
+			},
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

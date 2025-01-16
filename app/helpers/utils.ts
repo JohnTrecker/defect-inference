@@ -13,17 +13,29 @@ export function getEnabledClasses(features: Features): string[] {
 export function getColorForLabel(label: Defect) {
     // Define colors for each label type
     const colors = {
-        board_heartwood: "#4B5CFF",  // Bright blue
-        board_whitewood: "#00B4D8",  // Cyan
-        board_rot: "#B14EFF",    // Bright purple
-        board_streak: "#FF9F45",  // Bright orange
-        board_knot: "#FF6B6B",    // Bright red
-        board_wormhole: "#4FFFB0", // Bright mint
-        board_want: "#FF61D2",    // Bright pink
-        board_bark: "#FFD93D",    // Bright yellow
-        board_firescar: "#FF8FA3", // Bright salmon
-        board_beltmark: "#4ADE80", // Bright green
+        board_heartwood: "rgb(75 92 255)",    // Bright blue
+        board_whitewood: "rgb(0 180 216)",    // Cyan
+        board_rot: "rgb(177 78 255)",         // Bright purple
+        board_streak: "rgb(255 159 69)",      // Bright orange
+        board_knot: "rgb(255 107 107)",       // Bright red
+        board_wormhole: "rgb(79 255 176)",    // Bright mint
+        board_want: "rgb(255 97 210)",        // Bright pink
+        board_bark: "rgb(255 217 61)",        // Bright yellow
+        board_firescar: "rgb(255 143 163)",   // Bright salmon
+        board_beltmark: "rgb(74 222 128)",    // Bright green
     };
+    // const colors = {
+    //     board_heartwood: "#4B5CFF",  // Bright blue
+    //     board_whitewood: "#00B4D8",  // Cyan
+    //     board_rot: "#B14EFF",    // Bright purple
+    //     board_streak: "#FF9F45",  // Bright orange
+    //     board_knot: "#FF6B6B",    // Bright red
+    //     board_wormhole: "#4FFFB0", // Bright mint
+    //     board_want: "#FF61D2",    // Bright pink
+    //     board_bark: "#FFD93D",    // Bright yellow
+    //     board_firescar: "#FF8FA3", // Bright salmon
+    //     board_beltmark: "#4ADE80", // Bright green
+    // };
     return colors[label] || '#000000';
 }
 
@@ -57,7 +69,11 @@ export async function drawMasksOnImage(imageUrl: string, imageData: Inference) {
                 // ctx.strokeStyle = getColorForLabel(pred.class as Defect);
                 // ctx.lineWidth = parseInt(formData.stroke);
                 const color = getColorForLabel(pred.class as Defect);
-                ctx.fillStyle = color + '66'; // Add 66 for 40% opacity in hex
+                const rgbMatch = color.match(/rgb\((\d+)\s+(\d+)\s+(\d+)\)/);
+                const fillColor = rgbMatch
+                    ? `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, 0.4)`
+                    : color;
+                ctx.fillStyle = fillColor;
 
                 // Draw polygon
                 ctx.beginPath();
