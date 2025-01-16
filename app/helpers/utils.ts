@@ -6,7 +6,7 @@ export function removeBorders(feature: Prediction) {
 
 export function getEnabledClasses(features: Features): string[] {
     return Object.entries(features)
-        .filter(([_, value]) => value)
+        .filter((keyValuePair) => keyValuePair[1])
         .map(([className]) => className)
 };
 
