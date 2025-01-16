@@ -18,15 +18,14 @@ import {
 import { Features, SavedImages } from './types';
 import WoodImage from "./WoodImage";
 import Report from "./Report";
+import { getUniqueImages } from "./helpers/utils";
 
 interface Props {
     images: SavedImages
     features: Features,
 }
 export default function AllImages({ images, features }: Props){
-    const uniqueImages = images.filter((image, index, self) =>
-        index === self.findIndex((i) => i.data.inference_id === image.data.inference_id)
-    );
+    const uniqueImages = getUniqueImages(images)
 
     return (
         <Dialog>

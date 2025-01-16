@@ -1,4 +1,4 @@
-import { Defect, Features, Inference, Prediction } from "../types";
+import { Defect, Features, Inference, Prediction, SavedImage, SavedImages } from "../types";
 
 export function removeBorders(feature: Prediction) {
     return !['board_heartwood', 'board_whitewood'].includes(feature.class)
@@ -86,3 +86,13 @@ export async function drawMasksOnImage(imageUrl: string, imageData: Inference) {
         img.src = imageUrl;
     });
 };
+
+export function getUniqueImages(images: SavedImages): SavedImages {
+    const map: Record<string, SavedImage > = {}
+    for (const img of images) {
+        if (!(img.file in map)) {
+            map[img.file] = img
+        }
+    }
+    return Object.values(map);
+}

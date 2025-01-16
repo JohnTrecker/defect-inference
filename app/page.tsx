@@ -156,6 +156,7 @@ export default function Home() {
         {
           image: inputImagePreview,
           data: response.data,
+          file: formData.fileName,
         }
       ])
       setNotification('');

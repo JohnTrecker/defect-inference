@@ -47,6 +47,7 @@ export type Features = {
 export interface SavedImage {
     image: string,
     data: Inference,
+    file: string,
 }
 
 export type SavedImages = SavedImage[]
