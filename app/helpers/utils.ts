@@ -1,4 +1,4 @@
-import { Defect, Features, Inference, Prediction, SavedImage, SavedImages } from "../types";
+import { Defect, Features, Inference, Prediction, SavedImage, SavedImages, Point, BoundingBox } from "../types";
 
 export function removeBorders(feature: Prediction) {
     return !['board_heartwood', 'board_whitewood'].includes(feature.class)
@@ -58,44 +58,19 @@ export async function drawMasksOnImage(imageUrl: string, imageData: Inference) {
             // Draw original image
             ctx.drawImage(img, 0, 0);
 
+            // Calculate scaling factors
+            const scaleX = img.width / image.width;
+            const scaleY = img.height / image.height;
+
             // Draw each prediction
             predictions.forEach((pred) => {
-                if (!pred.points || pred.points.length === 0) {
-                    return;
-                }
-
-                // Calculate scaling factors
-                const scaleX = img.width / image.width;
-                const scaleY = img.height / image.height;
-
-                // ctx.strokeStyle = getColorForLabel(pred.class as Defect);
-                // ctx.lineWidth = parseInt(formData.stroke);
                 const color = getColorForLabel(pred.class as Defect);
-                const rgbMatch = color.match(/rgb\((\d+)\s+(\d+)\s+(\d+)\)/);
-                const fillColor = rgbMatch
-                    ? `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, 0.4)`
-                    : color;
-                ctx.fillStyle = fillColor;
 
-                // Draw polygon
-                ctx.beginPath();
-                const scaledPoints = pred.points.map(point => ({
-                    x: point.x * scaleX,
-                    y: point.y * scaleY
-                }));
-
-                ctx.moveTo(scaledPoints[0].x, scaledPoints[0].y);
-                scaledPoints.forEach((point: { x: number, y: number }) => {
-                    ctx.lineTo(point.x, point.y);
-                });
-                ctx.closePath();
-                ctx.fill();
-                // ctx.stroke();
-
-                // Draw outline
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 5;
-                ctx.stroke();
+                if ('points' in pred && pred.points && pred.points.length > 0) {
+                    drawPolygon(ctx, pred.points, color, scaleX, scaleY);
+                } else if ('x' in pred && 'width' in pred) {
+                    drawBoundingBox(ctx, pred as BoundingBox, color, scaleX, scaleY);
+                }
             });
 
             // console.log(`Successfully drew ${masksDrawn}/${predictions.length} masks`);
@@ -104,6 +79,70 @@ export async function drawMasksOnImage(imageUrl: string, imageData: Inference) {
         img.src = imageUrl;
     });
 };
+
+function drawPolygon(
+    ctx: CanvasRenderingContext2D,
+    points: Point[],
+    color: string,
+    scaleX: number,
+    scaleY: number
+) {
+    const scaledPoints = points.map(point => ({
+        x: point.x * scaleX,
+        y: point.y * scaleY
+    }));
+
+    // Set fill style with transparency
+    const rgbMatch = color.match(/rgb\((\d+)\s+(\d+)\s+(\d+)\)/);
+    const fillColor = rgbMatch
+        ? `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, 0.4)`
+        : color;
+    ctx.fillStyle = fillColor;
+
+    // Draw polygon
+    ctx.beginPath();
+    ctx.moveTo(scaledPoints[0].x, scaledPoints[0].y);
+    scaledPoints.forEach((point: Point) => {
+        ctx.lineTo(point.x, point.y);
+    });
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw outline
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.stroke();
+}
+
+function drawBoundingBox(
+    ctx: CanvasRenderingContext2D,
+    box: BoundingBox,
+    color: string,
+    scaleX: number,
+    scaleY: number
+) {
+    const scaledBox = {
+        x: (box.x - box.width / 2) * scaleX,
+        y: (box.y - box.height / 2) * scaleY,
+        width: box.width * scaleX,
+        height: box.height * scaleY
+    };
+
+    // Set fill style with transparency
+    const rgbMatch = color.match(/rgb\((\d+)\s+(\d+)\s+(\d+)\)/);
+    const fillColor = rgbMatch
+        ? `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, 0.4)`
+        : color;
+    ctx.fillStyle = fillColor;
+
+    // Draw rectangle
+    ctx.fillRect(scaledBox.x, scaledBox.y, scaledBox.width, scaledBox.height);
+
+    // Draw outline
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.strokeRect(scaledBox.x, scaledBox.y, scaledBox.width, scaledBox.height);
+}
 
 export function getUniqueImages(images: SavedImages): SavedImages {
     const map: Record<string, SavedImage > = {}

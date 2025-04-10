@@ -27,6 +27,22 @@ interface Points {
     y: number,
 }
 
+export interface Point {
+    x: number;
+    y: number;
+}
+
+export interface BoundingBox {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    class: string;
+    confidence: number;
+    detection_id: string;
+    class_id: number;
+}
+
 export enum Defect {
     "board_heartwood" = "board_heartwood",
     "board_whitewood" = "board_whitewood",
