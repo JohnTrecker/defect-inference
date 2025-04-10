@@ -34,6 +34,7 @@ export enum Defect {
     "board_streak" = "board_streak",
     "board_knot" = "board_knot",
     "board_wormhole" = "board_wormhole",
+    "board_flagworm" = "board_flagworm",
     "board_want" = "board_want",
     "board_bark" = "board_bark",
     "board_firescar" = "board_firescar",

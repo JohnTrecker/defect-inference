@@ -18,6 +18,7 @@ export function getColorForLabel(label: Defect) {
         board_rot: "rgb(177 78 255)",         // Bright purple
         board_streak: "rgb(255 159 69)",      // Bright orange
         board_knot: "rgb(255 107 107)",       // Bright red
+        board_flagworm: "rgb(76 153 0)",      // Dark green
         board_wormhole: "rgb(79 255 176)",    // Bright mint
         board_want: "rgb(255 97 210)",        // Bright pink
         board_bark: "rgb(255 217 61)",        // Bright yellow
@@ -30,6 +31,7 @@ export function getColorForLabel(label: Defect) {
     //     board_rot: "#B14EFF",    // Bright purple
     //     board_streak: "#FF9F45",  // Bright orange
     //     board_knot: "#FF6B6B",    // Bright red
+    //     board_flagworm: "#4C9900",  // Dark green
     //     board_wormhole: "#4FFFB0", // Bright mint
     //     board_want: "#FF61D2",    // Bright pink
     //     board_bark: "#FFD93D",    // Bright yellow

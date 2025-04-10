@@ -31,6 +31,7 @@ export default function Home() {
     board_streak: true,
     board_knot: true,
     board_wormhole: true,
+    board_flagworm: true,
     board_want: true,
     board_bark: true,
     board_firescar: true,
