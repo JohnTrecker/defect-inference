@@ -16,9 +16,9 @@ export default function WoodImage({image, data, features}: Props){
     const processImageWithMasks = async (imageData: string, inferenceData: Inference, classes: string[]) => {
         const filteredData = {
             ...inferenceData,
-            predictions: inferenceData.predictions.filter(pred =>
+            predictions: inferenceData.predictions?.filter(pred =>
                 classes.includes(pred.class)
-            )
+            ) ?? inferenceData.predictions
         };
 
         try {
@@ -40,8 +40,8 @@ export default function WoodImage({image, data, features}: Props){
             <Image
                 src={processedImage}
                 alt="Output preview"
-                width={data.image.width}
-                height={data.image.height}
+                width={data.image?.width ?? 1024}
+                height={data.image?.height ?? 322}
                 style={{ width: '100%', height: 'auto' }}
             />
         </div>

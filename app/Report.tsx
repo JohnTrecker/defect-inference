@@ -8,7 +8,7 @@ interface Props {
 
 export default function Report({ output }: Props) {
     const { predictions } = output
-    const defects = predictions.filter(removeBorders)
+    const defects = predictions?.filter(removeBorders) ?? predictions
     // const inferenceTime = Math.round(time * 1000 * 100) / 100 // Convert to ms and round to 2 decimal places
 
     return (
@@ -29,7 +29,7 @@ export default function Report({ output }: Props) {
                                 return (
                                     <li key={i}>
                                         <Badge className='m-4' variant="outline" style={{ backgroundColor: color, opacity: 0.8 }}>
-                                            {`${classLabel} ( ${percentConfidence}% )`}
+                                            {`${classLabel} - ${percentConfidence}%`}
                                         </Badge>
                                     </li>
                                 )

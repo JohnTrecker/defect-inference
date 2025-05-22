@@ -95,7 +95,7 @@ function drawPolygon(
     // Set fill style with transparency
     const rgbMatch = color.match(/rgb\((\d+)\s+(\d+)\s+(\d+)\)/);
     const fillColor = rgbMatch
-        ? `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, 0.4)`
+        ? `rgba(${rgbMatch[1]}, ${rgbMatch[2]}, ${rgbMatch[3]}, 0.1)`
         : color;
     ctx.fillStyle = fillColor;
 

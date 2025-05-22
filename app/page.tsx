@@ -36,6 +36,7 @@ export default function Home() {
     board_bark: true,
     board_firescar: true,
     board_beltmark: true,
+    // board_rot_or_firescar: true,
   });
 
   // State for form values
@@ -151,7 +152,8 @@ export default function Home() {
         data: { image },
       });
 
-      setOutput(response.data);
+      const data: Inference = response.data;
+      setOutput(data);
       setSavedImages((prev) => [
         ...prev,
         {
@@ -175,7 +177,7 @@ export default function Home() {
       ].join("\n"));
       console.log('Error submitting form: ', error)
     }
-  }, [formData.uploadMethod, getSettingsFromForm]);
+  }, [formData.fileName, formData.uploadMethod, getSettingsFromForm, inputImagePreview]);
 
   const convertToBase64 = async (file: File | undefined): Promise<string> => {
     if (!file) {

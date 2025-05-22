@@ -1,7 +1,7 @@
 
 export interface Inference {
     inference_id: string,
-    time: number,
+    time?: number,
     image: Dimensions,
     predictions: Prediction[],
 }
