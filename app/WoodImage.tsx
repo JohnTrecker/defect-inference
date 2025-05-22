@@ -25,7 +25,7 @@ export default function WoodImage({image, data, features}: Props){
             const newImageUrl = await drawMasksOnImage(imageData, filteredData);
             setProcessedImage(newImageUrl);
         } catch (error) {
-            console.error('Error drawing masks:', error);
+            console.error('Error drawing defect masks:', error);
         }
     };
 

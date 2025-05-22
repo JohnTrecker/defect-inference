@@ -3,7 +3,7 @@ export interface Inference {
     inference_id: string,
     time?: number,
     image: Dimensions,
-    predictions: Prediction[],
+    predictions: DefectPrediction[],
 }
 export interface Prediction {
     x: number,
@@ -11,20 +11,23 @@ export interface Prediction {
     width: number,
     height: number,
     confidence: number,
-    class: Defect,
-    points: Points[],
+    // class: Defect | Crop,
+    points: Point[],
     class_id: number
     detection_id: string,
+}
+
+export interface DefectPrediction extends Prediction {
+    class: Defect,
+}
+
+export interface CropPrediction extends Prediction {
+    class: Crop,
 }
 
 interface Dimensions {
     width: number,
     height: number,
-}
-
-interface Points {
-    x: number,
-    y: number,
 }
 
 export interface Point {
@@ -57,6 +60,10 @@ export enum Defect {
     "board_beltmark" = "board_beltmark",
 }
 
+export enum Crop {
+    "board" = "board",
+}
+
 export type Features = {
     [key in Defect]: boolean
 }
@@ -68,3 +75,45 @@ export interface SavedImage {
 }
 
 export type SavedImages = SavedImage[]
+
+export type WorkflowResponse = {
+    crops: {
+        inference_id: string,
+        predictions: {
+            image: Dimensions,
+            predictions: CropPrediction[],
+        },
+        model_id: string,
+    },
+    defects: {
+        inference_id: string,
+        predictions: {
+            image: Dimensions,
+            predictions: DefectPrediction[],
+        },
+        model_id: string,
+    }[]
+}
+
+export type ServerResponse = {
+    original: {
+        width: number,
+        height: number,
+    },
+    cropped: CropPrediction,
+    defects: DefectPrediction[],
+    cropModelId: string,
+    defectModelId: string,
+    inferenceId: string,
+}
+
+/**
+
+Inference {
+    inference_id: string,
+    time?: number,
+    image: Dimensions,
+    predictions: Prediction[],
+}
+
+*/

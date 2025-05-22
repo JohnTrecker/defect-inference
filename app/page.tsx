@@ -7,7 +7,8 @@ import JSONViewer from './JsonViewer';
 import WoodImage from './WoodImage';
 import Report from './Report';
 import AllImages from './AllImages';
-import { Features, Inference, SavedImages } from './types';
+import { Features, Inference, SavedImages, ServerResponse } from './types';
+import { cropImage } from './helpers/utils';
 
 const INIT_OUTPUT = {
   inference_id: '',
@@ -152,16 +153,38 @@ export default function Home() {
         data: { image },
       });
 
-      const data: Inference = response.data;
-      setOutput(data);
+      const data: ServerResponse = response.data;
+
+      // Convert canvas to base64
+      const croppedImage = await cropImage(image, data);
+
+      // Update the preview with cropped image
+      setInputImagePreview(croppedImage);
+
+      // Update output with the response data
+      setOutput({
+        inference_id: data.inferenceId,
+        image: {
+          width: data.cropped.width,
+          height: data.cropped.height
+        },
+        predictions: data.defects
+      });
       setSavedImages((prev) => [
         ...prev,
         {
-          image: inputImagePreview,
-          data: response.data,
+          image: croppedImage,
+          data: {
+            inference_id: data.inferenceId,
+            image: {
+              width: data.cropped.width,
+              height: data.cropped.height
+            },
+            predictions: data.defects
+          },
           file: formData.fileName,
         }
-      ])
+      ]);
       setNotification('');
     } catch (error) {
       const specific = error instanceof Error ? error.message : undefined
@@ -177,7 +200,7 @@ export default function Home() {
       ].join("\n"));
       console.log('Error submitting form: ', error)
     }
-  }, [formData.fileName, formData.uploadMethod, getSettingsFromForm, inputImagePreview]);
+  }, [formData.fileName, formData.uploadMethod, getSettingsFromForm]);
 
   const convertToBase64 = async (file: File | undefined): Promise<string> => {
     if (!file) {

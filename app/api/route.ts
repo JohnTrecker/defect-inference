@@ -1,18 +1,18 @@
-import { Prediction, Defect } from "../types"
+import { DefectPrediction, Defect, WorkflowResponse, ServerResponse } from "../types"
 import axios from "axios"
 
-interface RawPrediction extends Omit<Prediction, "class"> {
-    class: Prediction["class"] | "board_rot_or_firescar"
+interface RawPrediction extends Omit<DefectPrediction, "class"> {
+    class: DefectPrediction["class"] | "board_rot_or_firescar"
 }
 
-const convertToDefect = (prediction: RawPrediction) => {
+const convertToDefect = (prediction: RawPrediction): DefectPrediction => {
     if (prediction.class === 'board_rot_or_firescar') {
         return {
             ...prediction,
             class: Defect.board_rot,
         }
     }
-    return prediction
+    return prediction as DefectPrediction
 }
 export async function POST(request: Request) {
     try {
@@ -36,16 +36,26 @@ export async function POST(request: Request) {
             //     headers: {  "Content-Type": "application/x-www-form-urlencoded" }
         })
 
-        const output = response.data?.outputs[0]?.output
-        const predictions: Prediction[] = output?.predictions?.predictions.map(convertToDefect) ?? output?.predictions?.predictions
+        const output: WorkflowResponse = response.data?.outputs[0]
+        const {crops, defects} = output
 
-        const data = JSON.stringify({
-            inference_id: output?.inference_id,
-            time: undefined,
-            image: output?.predictions?.image ?? { width: 0, height: 0 },
-            predictions,
-        })
-        return new Response(data, {
+        const data: ServerResponse = {
+            original: {
+                width: crops.predictions.image.width,
+                height: crops.predictions.image.height,
+            },
+            cropped: crops.predictions.predictions.reduce((largest, current) => {
+                const largestArea = largest.width * largest.height;
+                const currentArea = current.width * current.height;
+                return currentArea > largestArea ? current : largest;
+            }, crops.predictions.predictions[0]),
+            defects: defects[0].predictions.predictions.map(convertToDefect),
+            cropModelId: crops.model_id,
+            defectModelId: defects[0].model_id,
+            inferenceId: defects[0].inference_id,
+        }
+
+        return new Response(JSON.stringify(data), {
             status: 200,
             headers: {
                 'Content-Type': 'application/json'

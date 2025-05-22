@@ -1,6 +1,6 @@
-import { Defect, Features, Inference, Prediction, SavedImage, SavedImages, Point, BoundingBox } from "../types";
+import { Defect, Features, Inference, SavedImage, SavedImages, Point, BoundingBox, ServerResponse, DefectPrediction } from "../types";
 
-export function removeBorders(feature: Prediction) {
+export function removeBorders(feature: DefectPrediction) {
     return !['board_heartwood', 'board_whitewood'].includes(feature.class)
 }
 
@@ -110,7 +110,7 @@ function drawPolygon(
 
     // Draw outline
     ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 2;
     ctx.stroke();
 }
 
@@ -140,7 +140,7 @@ function drawBoundingBox(
 
     // Draw outline
     ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
+    ctx.lineWidth = 2;
     ctx.strokeRect(scaledBox.x, scaledBox.y, scaledBox.width, scaledBox.height);
 }
 
@@ -152,4 +152,50 @@ export function getUniqueImages(images: SavedImages): SavedImages {
         }
     }
     return Object.values(map);
+}
+
+export function cropImage(base64Image: string, response: ServerResponse): Promise<string> {
+    return new Promise((resolve) => {
+        const img = document.createElement('img');
+        img.onload = () => {
+            // Create canvas for cropping
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return resolve(base64Image); // Fallback if context can't be created
+
+            // Get crop dimensions from ServerResponse
+            const { cropped } = response;
+            const { x, y, width, height } = cropped;
+
+            // Calculate scaling factors
+            const scaleX = img.width / response.original.width;
+            const scaleY = img.height / response.original.height;
+
+            // Calculate cropped coordinates adjusted for scale
+            const scaledX = (x - width / 2) * scaleX;
+            const scaledY = (y - height / 2) * scaleY;
+            const scaledWidth = width * scaleX;
+            const scaledHeight = height * scaleY;
+
+            // Set canvas dimensions to cropped size
+            canvas.width = scaledWidth;
+            canvas.height = scaledHeight;
+
+            // Draw the cropped portion of the image
+            ctx.drawImage(
+                img,
+                scaledX, scaledY, scaledWidth, scaledHeight, // Source coordinates
+                0, 0, scaledWidth, scaledHeight // Destination coordinates
+            );
+
+            // Return the cropped image as base64
+            resolve(canvas.toDataURL('image/jpeg'));
+        };
+
+        // Handle image loading errors
+        img.onerror = () => resolve(base64Image);
+
+        // Set image source
+        img.src = base64Image;
+    });
 }
