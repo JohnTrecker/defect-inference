@@ -168,7 +168,8 @@ export default function Home() {
           width: data.cropped.width,
           height: data.cropped.height
         },
-        predictions: data.defects
+        predictions: data.defects,
+        time: data.time,
       });
       setSavedImages((prev) => [
         ...prev,
@@ -177,10 +178,11 @@ export default function Home() {
           data: {
             inference_id: data.inferenceId,
             image: {
-              width: data.cropped.width,
-              height: data.cropped.height
+              width: data.cropped?.width ?? 0,
+              height: data.cropped?.height ?? 0
             },
-            predictions: data.defects
+            predictions: data.defects,
+            time: data.time,
           },
           file: formData.fileName,
         }
@@ -200,7 +202,7 @@ export default function Home() {
       ].join("\n"));
       console.log('Error submitting form: ', error)
     }
-  }, [formData.fileName, formData.uploadMethod, getSettingsFromForm]);
+  }, [formData.fileName, getSettingsFromForm]);
 
   const convertToBase64 = async (file: File | undefined): Promise<string> => {
     if (!file) {
@@ -294,7 +296,7 @@ export default function Home() {
                   />
                   {/* {
                     inputLabel === "Select File" && ( */}
-                      <button id="fileMock" className="bttn right active" onClick={() => document.getElementById('file')?.click()}>
+                      <button id="fileMock" className="bttn right active" onClick={() => document.getElementById('file')?.click()} type="button">
                         Browse
                       </button>
                     {/* )
@@ -319,8 +321,8 @@ export default function Home() {
               <div className="w-1/2 md:w-1/4" id="format">
                 <label className="input__label">Inference Result</label>
                 <div>
-                  <button id="imageButton" onClick={() => setFormat('image')} data-value="image" className={`bttn left fill ${format === 'image' ? 'active' : ''}`}>Image</button>
-                  <button id="jsonButton" onClick={() => setFormat('json')} data-value="json" className={`bttn right fill ${format === 'json' ? 'active' : ''}`}>JSON</button>
+                  <button id="imageButton" onClick={() => setFormat('image')} data-value="image" className={`bttn left fill ${format === 'image' ? 'active' : ''}`} type="button">Image</button>
+                  <button id="jsonButton" onClick={() => setFormat('json')} data-value="json" className={`bttn right fill ${format === 'json' ? 'active' : ''}`} type="button">JSON</button>
                 </div>
               </div>
 
@@ -362,7 +364,7 @@ export default function Home() {
               </div> */}
 
               <div className="w-full">
-                <button value="Run Inference" onClick={handleFormSubmit} className="bttn__primary mr-54">Run Inference</button>
+                <button value="Run Inference" onClick={handleFormSubmit} className="bttn__primary mr-54" type="button">Run Inference</button>
                 {savedImages.length > 1 && <AllImages images={savedImages} features={features}/>}
               </div>
             </div>

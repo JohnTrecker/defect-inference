@@ -18,6 +18,8 @@ export async function POST(request: Request) {
     try {
         const {image} = await request.json()
         const url = `${process.env.NEXT_PUBLIC_BASE_URL}/${process.env.NEXT_PUBLIC_MODEL_DETECT_URL}/${process.env.NEXT_PUBLIC_MODEL_VERSION}`
+        // track timing of the request
+        const startTime = Date.now()
         const response = await axios({
             method: "POST",
             url,
@@ -35,6 +37,8 @@ export async function POST(request: Request) {
             //     data: image,
             //     headers: {  "Content-Type": "application/x-www-form-urlencoded" }
         })
+        const endTime = Date.now()
+        const time = endTime - startTime
 
         const output: WorkflowResponse = response.data?.outputs[0]
         const {crops, defects} = output
@@ -49,10 +53,11 @@ export async function POST(request: Request) {
                 const currentArea = current.width * current.height;
                 return currentArea > largestArea ? current : largest;
             }, crops.predictions.predictions[0]),
-            defects: defects[0].predictions.predictions.map(convertToDefect),
+            defects: defects[0]?.predictions.predictions.map(convertToDefect) ?? [],
             cropModelId: crops.model_id,
-            defectModelId: defects[0].model_id,
-            inferenceId: defects[0].inference_id,
+            defectModelId: defects[0]?.model_id ?? '',
+            inferenceId: defects[0]?.inference_id ?? '',
+            time,
         }
 
         return new Response(JSON.stringify(data), {

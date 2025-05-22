@@ -1,7 +1,7 @@
 
 export interface Inference {
     inference_id: string,
-    time?: number,
+    time: number,
     image: Dimensions,
     predictions: DefectPrediction[],
 }
@@ -105,15 +105,5 @@ export type ServerResponse = {
     cropModelId: string,
     defectModelId: string,
     inferenceId: string,
+    time: number,
 }
-
-/**
-
-Inference {
-    inference_id: string,
-    time?: number,
-    image: Dimensions,
-    predictions: Prediction[],
-}
-
-*/

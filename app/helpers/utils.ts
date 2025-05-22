@@ -165,6 +165,7 @@ export function cropImage(base64Image: string, response: ServerResponse): Promis
 
             // Get crop dimensions from ServerResponse
             const { cropped } = response;
+            if (!cropped) return resolve(base64Image);
             const { x, y, width, height } = cropped;
 
             // Calculate scaling factors
