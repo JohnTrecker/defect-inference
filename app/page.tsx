@@ -166,8 +166,8 @@ export default function Home() {
       setOutput({
         inference_id: data.inferenceId,
         image: {
-          width: data.cropped.width,
-          height: data.cropped.height
+          width: data.cropped?.width ?? data.original.width,
+          height: data.cropped?.height ?? data.original.height,
         },
         predictions: data.defects,
         time: data.time,
@@ -179,8 +179,8 @@ export default function Home() {
           data: {
             inference_id: data.inferenceId,
             image: {
-              width: data.cropped?.width ?? 0,
-              height: data.cropped?.height ?? 0
+              width: data.cropped?.width ?? data.original.width,
+              height: data.cropped?.height ?? data.original.width
             },
             predictions: data.defects,
             time: data.time,
