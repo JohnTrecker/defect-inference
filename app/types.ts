@@ -47,7 +47,7 @@ export interface BoundingBox {
 }
 
 export enum Defect {
-    "board_heartwood" = "board_heartwood",
+    // "board_heartwood" = "board_heartwood",
     "board_whitewood" = "board_whitewood",
     "board_rot" = "board_rot",
     "board_streak" = "board_streak",
@@ -107,3 +107,22 @@ export type ServerResponse = {
     inferenceId: string,
     time: number,
 }
+
+
+/**
+ * These are the defects that are not trained on the current model:
+ * v1-3-seg
+ */
+export const undertrainedDefects = [
+    // Defect.board_whitewood,
+    // Defect.board_rot,
+    // Defect.board_streak,
+    // Defect.board_knot,
+    // Defect.board_firescar,
+    // Defect.board_heartwood,
+    Defect.board_wormhole,
+    Defect.board_flagworm,
+    Defect.board_want,
+    Defect.board_bark,
+    Defect.board_beltmark,
+]

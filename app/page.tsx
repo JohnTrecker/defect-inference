@@ -7,8 +7,9 @@ import JSONViewer from './JsonViewer';
 import WoodImage from './WoodImage';
 import Report from './Report';
 import AllImages from './AllImages';
-import { Features, Inference, SavedImages, ServerResponse } from './types';
+import { Defect, Features, Inference, SavedImages, ServerResponse, undertrainedDefects } from './types';
 import { cropImage } from './helpers/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
 
 const INIT_OUTPUT = {
   inference_id: '',
@@ -26,17 +27,17 @@ export default function Home() {
   const [savedImages, setSavedImages] = useState<SavedImages>([]);
   // const [inputLabel, setInputLabel] = useState<'Select File' | 'Type URL'>('Select File');
   const [features, setFeatures] = useState<Features>({
-    board_heartwood: true,
+    // board_heartwood: false,
     board_whitewood: true,
     board_rot: true,
     board_streak: true,
     board_knot: true,
-    board_wormhole: true,
-    board_flagworm: true,
-    board_want: true,
-    board_bark: true,
     board_firescar: true,
-    board_beltmark: true,
+    board_wormhole: false,
+    board_flagworm: false,
+    board_want: false,
+    board_bark: false,
+    board_beltmark: false,
     // board_rot_or_firescar: true,
   });
 
@@ -329,25 +330,45 @@ export default function Home() {
               <div className="w-full" id="labels">
                 <label className="input__label">Labels</label>
                 <div className="flex flex-wrap gap-4">
-                  {Object.keys(features).map((feature) => (
+                  { Object.keys(features).map((feature) => {
+                    const isDisabled = undertrainedDefects.includes(feature as Defect)
+
+                    return (
                     <div key={feature} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={feature}
-                        className="w-5 h-5 border border-[#cbd5e0] rounded cursor-pointer appearance-none checked:bg-white relative
-                        after:content-['✕'] after:absolute after:top-1/2 after:left-1/2 after:transform after:-translate-x-1/2 after:-translate-y-1/2 
-                        after:opacity-0 checked:after:opacity-100 after:text-[#606FC7] checked:border-[#606FC7] transition-colors"
-                        checked={features[feature as keyof Features]}
-                        onChange={(e) => setFeatures(prev => ({
-                          ...prev,
-                          [feature]: e.target.checked,
-                        }))}
-                      />
+                      <div className="relative">
+                        <input
+                          type="checkbox"
+                          id={feature}
+                          className="w-5 h-5 border border-[#cbd5e0] rounded cursor-pointer appearance-none checked:bg-white relative
+                          after:content-['✕'] after:absolute after:top-1/2 after:left-1/2 after:transform after:-translate-x-1/2 after:-translate-y-1/2 
+                          after:opacity-0 checked:after:opacity-100 after:text-[#606FC7] checked:border-[#606FC7] transition-colors"
+                          checked={features[feature as keyof Features]}
+                          onChange={(e) => setFeatures(prev => ({
+                            ...prev,
+                            [feature]: e.target.checked,
+                          }))}
+                          disabled={isDisabled}
+                        />
+                        {isDisabled && (
+                          <div className="absolute -top-1 -right-1">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button className="h-4 w-4 rounded-full bg-amber-400 text-white text-xs flex items-center justify-center">
+                                  !
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="max-w-[200px] p-2 rounded-md shadow-md bg-white border">
+                                  <p className="text-xs">{`${feature.replace('board_', '').toLocaleUpperCase()} defects underrepresented in training data.`}</p>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        )}
+                      </div>
                       <label htmlFor={feature} className="text-sm capitalize">
                         {feature.replace('board_', '')}
                       </label>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
 
