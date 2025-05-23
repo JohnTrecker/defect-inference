@@ -256,7 +256,10 @@ export default function Home() {
       <main className="flex flex-col gap-8 items-center sm:items-start">
         <form id="inputForm" onSubmit={handleFormSubmit}>
           <div className="header flex text-xl font-medium">
-            <h1>Select an image for defect detection.</h1>
+            <div className='flex-col'>
+              <h1 className="text-2xl font-bold">Model v1.3.0</h1>
+              <p className="text-sm text-gray-600 mt-2">Average Precision (mAP@50) - 54.7%</p>
+            </div>
           </div>
 
           <div className="content">
