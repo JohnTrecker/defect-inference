@@ -200,5 +200,3 @@ export function cropResponseImage(base64Image: string, response: ServerResponse)
         img.src = base64Image;
     });
 }
-
-export function cropRequestImage(base64Image: string): Promise<string> {}
