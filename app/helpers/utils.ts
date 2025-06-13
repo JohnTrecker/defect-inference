@@ -154,7 +154,7 @@ export function getUniqueImages(images: SavedImages): SavedImages {
     return Object.values(map);
 }
 
-export function cropImage(base64Image: string, response: ServerResponse): Promise<string> {
+export function cropResponseImage(base64Image: string, response: ServerResponse): Promise<string> {
     return new Promise((resolve) => {
         const img = document.createElement('img');
         img.onload = () => {
@@ -200,3 +200,5 @@ export function cropImage(base64Image: string, response: ServerResponse): Promis
         img.src = base64Image;
     });
 }
+
+export function cropRequestImage(base64Image: string): Promise<string> {}

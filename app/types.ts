@@ -79,18 +79,14 @@ export type SavedImages = SavedImage[]
 export type WorkflowResponse = {
     crops: {
         inference_id: string,
-        predictions: {
-            image: Dimensions,
-            predictions: CropPrediction[],
-        },
+        image: Dimensions,
+        predictions: CropPrediction[],
         model_id: string,
     },
     defects: {
         inference_id: string,
-        predictions: {
-            image: Dimensions,
-            predictions: DefectPrediction[],
-        },
+        image: Dimensions,
+        predictions: DefectPrediction[],
         model_id: string,
     }[]
 }

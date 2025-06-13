@@ -8,7 +8,7 @@ import WoodImage from './WoodImage';
 import Report from './Report';
 import AllImages from './AllImages';
 import { Defect, Features, Inference, SavedImages, ServerResponse, undertrainedDefects } from './types';
-import { cropImage } from './helpers/utils';
+import { cropResponseImage } from './helpers/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@radix-ui/react-popover';
 
 const INIT_OUTPUT = {
@@ -157,7 +157,7 @@ export default function Home() {
       const data: ServerResponse = response.data;
 
       // Convert canvas to base64
-      const croppedImage = await cropImage(image, data);
+      const croppedImage = await cropResponseImage(image, data);
 
       // Update the preview with cropped image
       setInputImagePreview(croppedImage);
